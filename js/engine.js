@@ -26,7 +26,7 @@ var Engine = (function(global) {
         lastTime;
 
     canvas.width = 505;
-    canvas.height = 606;
+    canvas.height = 606 + 100;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -107,6 +107,8 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+
+
         var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/stone-block.png',   // Row 1 of 3 of stone
@@ -136,8 +138,16 @@ var Engine = (function(global) {
             }
         }
 
-
         renderEntities();
+
+        ctx.save();
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 630, ctx.canvas.width, ctx.canvas.height - 630);
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2.0;
+        ctx.font = '36px Gochi Hand';
+        ctx.strokeText('Score:  ' + player.score, 0, 630 + 46);
+        ctx.restore();
     }
 
     /* This function is called by the render function and is called on each game
@@ -181,5 +191,4 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
-    global.canvas = canvas;
 })(this);

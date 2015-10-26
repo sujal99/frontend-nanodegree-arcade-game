@@ -22,7 +22,7 @@ Enemy.prototype.ypos = function () {
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
     this.x += dt * this.velocity;
-    if (this.x > canvas.width)  {
+    if (this.x > ctx.canvas.width)  {
         this.row = getRandomIntInclusive(1, 3);
         this.x = -101 * getRandomIntInclusive(3, 5);
         this.y = this.ypos();
@@ -44,6 +44,7 @@ var Player = function () {
     this.sprite = 'images/char-boy.png';
     this.height = 60.0;
     this.width = 60.0;
+    this.score = 0;
 };
 
 Player.prototype.update = function() {
@@ -52,6 +53,13 @@ Player.prototype.update = function() {
         this.col = this.initCol;
         this.x = this.col * 101;
         this.y = this.row * 60.0 + (this.row - 1) * 23;
+        if (this.score) --this.score;
+    } else if (this.row === 0) {
+        this.row = this.initRow;
+        this.col = this.initCol;
+        this.x = this.col * 101;
+        this.y = this.row * 60.0 + (this.row - 1) * 23;
+        ++this.score;
     } else {
         this.x = this.col * 101;
         this.y = this.row * 60.0 + (this.row - 1) * 23;
@@ -63,7 +71,6 @@ Player.prototype.isCollision = function (aPlayer) {
         aEnemy = allEnemies[i];
         if (isInterSect({left:aEnemy.x, top:aEnemy.y, right:aEnemy.x  + aEnemy.width, bottom:aEnemy.y + aEnemy.height},
         {left:aPlayer.x, top:aPlayer.y, right:aPlayer.x  + aPlayer.width, bottom:aPlayer.y + aPlayer.height}) === true) {
-            console.log("☠☠☠");
             return true;
         }
     }
@@ -80,13 +87,13 @@ Player.prototype.handleInput = function(dir) {
     } else if (dir == 'right') {
         if (this.col < 4) ++this.col;
     }  else if (dir == 'up') {
-        if (this.row > 1) --this.row;
+        if (this.row > 0) --this.row;
     } else {
         if (this.row < 5) ++this.row;
     }
 };
 
-var Game = (function(global) {
+var App = (function(global) {
     var allEnemies = [];
     for (var i = 0; i < 5; ++i) {
         allEnemies[i] = new Enemy();
@@ -118,8 +125,4 @@ function isInterSect(r1, r2) {
 
 function getRandomIntInclusive(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function isSameSign(x, y) {
-
 }
