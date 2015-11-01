@@ -1,5 +1,8 @@
+/* global ctx */
+/* global Resources */
 // Enemies our player must avoid
 var Enemy = function() {
+    "use strict";
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
@@ -15,12 +18,14 @@ var Enemy = function() {
 };
 
 Enemy.prototype.ypos = function () {
+    "use strict";
     return this.row * 60.0 + (this.row - 1) * 23;
 };
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
+    "use strict";
     this.x += dt * this.velocity;
     if (this.x > ctx.canvas.width)  {
         this.row = getRandomIntInclusive(1, 3);
@@ -31,10 +36,12 @@ Enemy.prototype.update = function(dt) {
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
+    "use strict";
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
 var Player = function () {
+    "use strict";
     this.initRow = 5;
     this.initCol = 2;
     this.row = this.initRow;
@@ -48,6 +55,7 @@ var Player = function () {
 };
 
 Player.prototype.update = function() {
+    "use strict";
     if(this.isCollision(this) === true) {
         this.row = this.initRow;
         this.col = this.initCol;
@@ -67,8 +75,9 @@ Player.prototype.update = function() {
 };
 
 Player.prototype.isCollision = function (aPlayer) {
-    for (var i = 0; i < allEnemies.length; i++) {
-        aEnemy = allEnemies[i];
+    "use strict";
+    for (var i = 0, len = allEnemies.length; i < len; i++) {
+        var aEnemy = allEnemies[i];
         if (isInterSect({left:aEnemy.x, top:aEnemy.y, right:aEnemy.x  + aEnemy.width, bottom:aEnemy.y + aEnemy.height},
         {left:aPlayer.x, top:aPlayer.y, right:aPlayer.x  + aPlayer.width, bottom:aPlayer.y + aPlayer.height}) === true) {
             return true;
@@ -78,10 +87,12 @@ Player.prototype.isCollision = function (aPlayer) {
 };
 
 Player.prototype.render = function () {
+    "use strict";
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
 Player.prototype.handleInput = function(dir) {
+    "use strict";
     if (dir === 'left') {
         if (this.col > 0) --this.col;
     } else if (dir == 'right') {
@@ -94,6 +105,7 @@ Player.prototype.handleInput = function(dir) {
 };
 
 var App = (function(global) {
+    "use strict";
     var allEnemies = [];
     for (var i = 0; i < 5; ++i) {
         allEnemies[i] = new Enemy();
@@ -106,6 +118,7 @@ var App = (function(global) {
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
+    "use strict";
     var allowedKeys = {
         37: 'left',
         38: 'up',
@@ -118,11 +131,13 @@ document.addEventListener('keyup', function(e) {
 
 
 function isInterSect(r1, r2) {
+    "use strict";
     var val = (((r2.right > r1.left && r2.left > r1.right) || (r2.right < r1.left && r2.left < r1.right)) ||
         ((r2.top > r1.bottom && r2.bottom > r1.top) || (r2.top < r1.bottom && r2.bottom < r1.top)));
     return !val;
 }
 
 function getRandomIntInclusive(min, max) {
+    "use strict";
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
