@@ -26,7 +26,7 @@ var Engine = (function(global) {
         lastTime;
 
     canvas.width = 505;
-    canvas.height = 606 + 100;
+    canvas.height = 606 + 200;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -66,7 +66,33 @@ var Engine = (function(global) {
     function init() {
         reset();
         lastTime = Date.now();
+        addCollectibles();
         main();
+    }
+
+    function addCollectibles() {
+        allCollectibles.splice(0, allCollectibles.length);
+        var cells = [];
+        for (var i = 0, len = playableRows * playableCols; i < len; i++) {
+            cells[i] = i;
+        }
+
+        var images = [
+            {image:'images/Gem\ Blue.png', name: 'blue'},
+            {image:'images/Gem\ Green.png', name: 'green'},
+            {image:'images/Gem\ Orange.png', name: 'orange'}
+        ];
+
+        for (var j = 0; j < 8; j++) {
+            var image = images[getRandomIntInclusive(0, images.length -  1)];
+            var cellLoc = cells[getRandomIntInclusive(0, cells.length - 1)];
+            cells.splice(cellLoc,1);
+            var collectible = new Collectible(image.image,
+                new Pos(Math.floor(cellLoc/playableCols) + 1,
+                    cellLoc%playableCols));
+            collectible.name = image.name;
+            allCollectibles.push(collectible);
+        }
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -79,8 +105,21 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        updateEntities(dt);
-        // checkCollisions();
+        var isCollision = checkCollisions();
+        updateEntities(dt, isCollision);
+    }
+
+    /* Check collision*/
+    function checkCollisions () {
+        'use strict';
+        for (var i = 0, len = allEnemies.length; i < len; i++) {
+            var aEnemy = allEnemies[i];
+            if (isInterSect({left:aEnemy.x, top:aEnemy.y, right:aEnemy.x  + aEnemy.width, bottom:aEnemy.y + aEnemy.height},
+                    {left:player.x, top:player.y, right:player.x  + player.width, bottom:player.y + player.height}) === true) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /* This is called by the update function  and loops through all of the
@@ -90,11 +129,13 @@ var Engine = (function(global) {
      * the data/properties related to  the object. Do your drawing in your
      * render methods.
      */
-    function updateEntities(dt) {
+    function updateEntities(dt, isCollision) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+        if (player.update(isCollision)) {
+            addCollectibles();
+        }
     }
 
     /* This function initially draws the "game level", it will then call
@@ -142,13 +183,13 @@ var Engine = (function(global) {
 
         ctx.save();
         ctx.fillStyle = 'white';
-        ctx.fillRect(0, 630, ctx.canvas.width, ctx.canvas.height - 630);
+        ctx.fillRect(0, 606, ctx.canvas.width, ctx.canvas.height);
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2.0;
-        ctx.font = '36px Gochi Hand';
-        ctx.strokeText('Score:  ' + player.score, 0, 630 + 46);
+        ctx.font = 'normal normal 700 36px sans-serif';
+        ctx.strokeText('Score:  ' + player.score, 0, 606.0 + 36.0);
         ctx.restore();
-
+        achivementDisplay.render();
     }
 
     /* This function is called by the render function and is called on each game

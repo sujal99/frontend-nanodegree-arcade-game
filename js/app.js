@@ -61,37 +61,28 @@ var Player = function () {
     this.collectibles = [];
 };
 
-Player.prototype.update = function() {
+Player.prototype.update = function(isCollision) {
     'use strict';
     this.isCollectible(this);
-    if(this.isCollision(this) === true) {
+    if(isCollision) {
         this.row = this.initRow;
         this.col = this.initCol;
         this.x = this.col * 101;
         this.y = this.row * 60.0 + (this.row - 1) * 23;
         if (this.score) --this.score;
+        return true;
     } else if (this.row === 0) {
         this.row = this.initRow;
         this.col = this.initCol;
         this.x = this.col * 101;
         this.y = this.row * 60.0 + (this.row - 1) * 23;
         ++this.score;
+        return true;
     } else {
         this.x = this.col * 101;
         this.y = this.row * 60.0 + (this.row - 1) * 23;
+        return false;
     }
-};
-
-Player.prototype.isCollision = function (aPlayer) {
-    'use strict';
-    for (var i = 0, len = allEnemies.length; i < len; i++) {
-        var aEnemy = allEnemies[i];
-        if (isInterSect({left:aEnemy.x, top:aEnemy.y, right:aEnemy.x  + aEnemy.width, bottom:aEnemy.y + aEnemy.height},
-        {left:aPlayer.x, top:aPlayer.y, right:aPlayer.x  + aPlayer.width, bottom:aPlayer.y + aPlayer.height}) === true) {
-            return true;
-        }
-    }
-    return false;
 };
 
 Player.prototype.isCollectible = function (aPlayer) {
@@ -130,6 +121,7 @@ var Collectible = function(image, pos) {
     'use strict';
     this.pos = pos;
     this.sprite = image;
+    this.name = null;
 };
 
 Collectible.prototype.render = function () {
@@ -142,6 +134,41 @@ Collectible.prototype.x = function() {
 
 Collectible.prototype.y = function() {
    return this.pos.row * 60.0 + (this.pos.row - 1) * 23;
+};
+
+var AchievementDisplay = function(player) {
+    this.sprites = [
+        {image:'images/Gem\ Blue.png', count:0, name: 'blue'},
+        {image:'images/Gem\ Green.png', count:0, name: 'green'},
+        {image:'images/Gem\ Orange.png', count:0, name: 'orange'}
+    ];
+    this.player = player;
+    this.x = 0.0;
+    this.y = 606.0;
+    this.spriteWidth = 101.0;
+};
+
+AchievementDisplay.prototype.render = function() {
+    this.player.collectibles.forEach(function(collectible, i){
+        if (collectible.name === this.sprites[0].name) {
+            this.sprites[0].count += 1;
+        } else if (collectible.name === this.sprites[1].name) {
+            this.sprites[1].count += 1;
+        } else if (collectible.name === this.sprites[2].name){
+            this.sprites[2].count += 1;
+        }
+    }, this);
+    this.player.collectibles.splice(0, this.player.collectibles.length);
+    ctx.save();
+    for (var i = 0, len = this.sprites.length; i < len; ++i) {
+        ctx.drawImage(Resources.get(this.sprites[i].image),
+            this.x + i * this.spriteWidth, this.y);
+        ctx.fillStyle = 'white';
+        ctx.font = 'normal normal 700 36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.sprites[i].count.toString(), 50.0 + i * 101.0, 606.0 + 100.0);
+    }
+    ctx.restore();
 };
 
 (function(global) {
@@ -157,28 +184,7 @@ Collectible.prototype.y = function() {
     global.allEnemies = allEnemies;
     global.allCollectibles = allCollectibles;
     global.player = player;
-
-    function addCollectibles() {
-        var cells = [];
-        for (var i = 0, len = playableRows * playableCols; i < len; i++) {
-            cells[i] = i;
-        }
-
-        var images = [
-            'images/Gem\ Blue.png',
-            'images/Gem\ Green.png',
-            'images/Gem\ Orange.png'
-        ];
-
-        for (var j = 0; j < 8; j++) {
-            var image = images[getRandomIntInclusive(0, images.length -  1)];
-            var cellLoc = cells[getRandomIntInclusive(0, cells.length - 1)];
-            cells.splice(cellLoc,1);
-            var collectible = new Collectible(image, new Pos(Math.floor(cellLoc/playableCols) + 1, cellLoc%playableCols));
-            allCollectibles.push(collectible);
-        }
-    }
-    addCollectibles();
+    global.achivementDisplay = new AchievementDisplay(player);
 })(this);
 
 
@@ -196,11 +202,12 @@ document.addEventListener('keyup', function(e) {
     player.handleInput(allowedKeys[e.keyCode]);
 });
 
-
 function isInterSect(r1, r2) {
     'use strict';
-    var val = (((r2.right > r1.left && r2.left > r1.right) || (r2.right < r1.left && r2.left < r1.right)) ||
-        ((r2.top > r1.bottom && r2.bottom > r1.top) || (r2.top < r1.bottom && r2.bottom < r1.top)));
+    var val = (((r2.right > r1.left && r2.left > r1.right) ||
+    (r2.right < r1.left && r2.left < r1.right)) ||
+    ((r2.top > r1.bottom && r2.bottom > r1.top) ||
+    (r2.top < r1.bottom && r2.bottom < r1.top)));
     return !val;
 }
 
